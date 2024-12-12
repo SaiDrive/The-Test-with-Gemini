@@ -17,7 +17,7 @@ const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
 setTimeout(() => {
   loadingOverlay.style.display = "none";
   mainContent.style.display = "block";
-}, 2000);
+}, 100);
 
 testTextarea.addEventListener("input", () => {
   testFileUpload.disabled = testTextarea.value.trim() !== "";
@@ -46,33 +46,37 @@ submitBtn.addEventListener("click", () => {
       hardness = radio.value;
     }
   });
-  const testId = Math.floor(10000 + Math.random() * 90000); // Generate 5-digit unique ID
+  const testId = Math.floor(10000 + Math.random() * 90000);
+  const id = Math.floor(100000 + Math.random() * 90000);
+  const formData = new FormData(); // Use FormData
 
-  const data = {
-    testId: testId,
-    noOfQustons: noOfQustons,
-    noOfOptions: noOfOptions,
-    hardness: hardness,
-    Document:
-      testTextarea.value ||
-      (testFileUpload.files.length > 0 ? "File Uploaded" : ""), // Handle file upload case
-  };
+  formData.append("testId", id);
+  formData.append("testId", testId);
+  formData.append("noOfQustons", noOfQustons);
+  formData.append("noOfOptions", noOfOptions);
+  formData.append("hardness", hardness);
+
+  if (testTextarea.value) {
+    formData.append("textData", testTextarea.value); // Send text data
+  }
+
+  if (testFileUpload.files.length > 0) {
+    for (let i = 0; i < testFileUpload.files.length; i++) {
+      formData.append("files", testFileUpload.files[i]); // Send files
+    }
+  }
 
   fetch("YOUR_API_ENDPOINT", {
-    // Replace with your API URL
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
+    body: formData, // Send FormData
   })
     .then((response) => response.json())
     .then((responseData) => {
       console.log("Success:", responseData);
-      // Handle successful API call (e.g., display a success message)
+      // Handle successful API call
     })
     .catch((error) => {
       console.error("Error:", error);
-      // Handle API error (e.g., display an error message)
+      // Handle API error
     });
 });

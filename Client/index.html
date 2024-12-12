@@ -20,6 +20,7 @@
             id="testTextarea"
             placeholder="Enter test instructions here"
           ></textarea>
+          <p>Or</p>
           <input type="file" id="testFileUpload" accept=".pdf,.jpg" multiple />
         </div>
         <button class="create-test-next-btn btn" id="createTestNextBtn">
@@ -41,8 +42,9 @@
           <label for="optionCount">Number of Options per Question (2-4):</label>
           <input type="number" id="optionCount" min="2" max="4" required />
         </div>
-        <div class="input-group">
+        <div class="input-group radio-input-group">
           <label for="difficultyLevel">Difficulty Level:</label>
+
           <div>
             <input
               type="radio"
