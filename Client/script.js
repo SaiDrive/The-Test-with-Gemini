@@ -117,7 +117,7 @@ submitBtn.addEventListener("click", () => {
     }
   }
 
-  fetch("YOUR_API_ENDPOINT", {
+  fetch("http://192.168.1.108:3000/submit", {
     method: "POST",
     body: formData,
   })
