@@ -1,0 +1,16 @@
+{
+  "name": "the-test-with-gemini",
+  "version": "1.0.0",
+  "description": "The Test with Gemini, is an AI test generation tool We are online",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "firebase-admin": "^13.0.1"
+  }
+}
