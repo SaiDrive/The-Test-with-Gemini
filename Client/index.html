@@ -16,11 +16,13 @@
         <h2>Create Test</h2>
         <div class="input-group">
           <textarea
-            class="test-textarea user-input"
+            maxlength="1000"
+            class="test-textarea"
             id="testTextarea"
             placeholder="Enter test instructions here"
           ></textarea>
           <p>Or</p>
+          <label for="" testFileUpload>Upload images or PDF:</label>
           <input type="file" id="testFileUpload" accept=".pdf,.jpg" multiple />
         </div>
         <button class="create-test-next-btn btn" id="createTestNextBtn">
@@ -50,23 +52,28 @@
               type="radio"
               id="easy"
               name="difficulty"
-              value="easy"
+              value="E"
               required
             />
             <label for="easy">Easy</label>
           </div>
           <div>
-            <input type="radio" id="medium" name="difficulty" value="medium" />
+            <input type="radio" id="medium" name="difficulty" value="M" />
             <label for="medium">Medium</label>
           </div>
           <div>
-            <input type="radio" id="hard" name="difficulty" value="hard" />
+            <input type="radio" id="hard" name="difficulty" value="H" />
             <label for="hard">Hard</label>
           </div>
         </div>
         <button class="back-btn" id="backBtn">Back</button>
         <button class="submit" id="submitBtn">Submit</button>
       </div>
+      <div
+        class="questionPreviewContainer"
+        id="questionPreviewContainer"
+        style="display: none"
+      ></div>
     </div>
 
     <script src="script.js"></script>
