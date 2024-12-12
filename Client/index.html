@@ -3,24 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TEST WITH GEMINI</title>
+    <title>Test Creation</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="bg-container">
-      <h1 class="loading-text" id="loadingText"></h1>
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-text" id="loadingText">Loading...</div>
+    </div>
 
-      <div class="creat-test-container" id="createTestContainer">
-        <h1 class="creat-test-heading">Create Test</h1>
-        <textarea class="test-textarea" id="testTextarea">adf</textarea>
-        <p class="test-or">OR</p>
-        <input type="file" id="testFileUpload" />
-
-        <button class="create-test-next-btn" id="createTestNextBtn">
+    <div class="mainDiv" style="display: none" id="mainContent">
+      <div class="createTestContainer" id="createTestContainer">
+        <h2>Create Test</h2>
+        <div class="input-group">
+          <textarea
+            class="test-textarea user-input"
+            id="testTextarea"
+            placeholder="Enter test instructions here"
+          ></textarea>
+          <input type="file" id="testFileUpload" accept=".pdf,.jpg" multiple />
+        </div>
+        <button class="create-test-next-btn btn" id="createTestNextBtn">
           Next
         </button>
       </div>
+
+      <div
+        class="createTestOptionContainer"
+        id="createTestOptionContainer"
+        style="display: none"
+      >
+        <h2>Test Options</h2>
+        <div class="input-group">
+          <label for="questionCount">Number of Questions:</label>
+          <input type="number" id="questionCount" min="1" required />
+        </div>
+        <div class="input-group">
+          <label for="optionCount">Number of Options per Question (2-4):</label>
+          <input type="number" id="optionCount" min="2" max="4" required />
+        </div>
+        <div class="input-group">
+          <label for="difficultyLevel">Difficulty Level:</label>
+          <div>
+            <input
+              type="radio"
+              id="easy"
+              name="difficulty"
+              value="easy"
+              required
+            />
+            <label for="easy">Easy</label>
+          </div>
+          <div>
+            <input type="radio" id="medium" name="difficulty" value="medium" />
+            <label for="medium">Medium</label>
+          </div>
+          <div>
+            <input type="radio" id="hard" name="difficulty" value="hard" />
+            <label for="hard">Hard</label>
+          </div>
+        </div>
+        <button class="back-btn" id="backBtn">Back</button>
+        <button class="submit" id="submitBtn">Submit</button>
+      </div>
     </div>
-    <script type="text/javascript" src="script.js"></script>
+
+    <script src="script.js"></script>
   </body>
 </html>
