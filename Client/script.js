@@ -186,7 +186,7 @@ submitBtn.addEventListener("click", () => {
     }
   }
 
-  fetch("http://192.168.1.108:3000/submit", {
+  fetch("http://localhost:3000/submit", {
     method: "POST",
     body: formData,
   })
