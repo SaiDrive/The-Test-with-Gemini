@@ -62,50 +62,17 @@ backBtn.addEventListener("click", () => {
 });
 startTestBtn.addEventListener("click", () => {
   const testId = testIdInput.value;
-  fetch("YOUR_API_ENDPOINT?testId=" + testId, {
+  fetch("http://localhost:3000/getquestions?testId=" + testId, {
     method: "GET",
   })
     .then((response) => response.json())
     .then((responseData) => {
-      testQuestions = responseData;
-      takeTestContainer.style.display = "none";
+      const { questions } = responseData;
+      testQuestions = questions;
       displayTestQuestion();
+      takeTestContainer.style.display = "none";
     })
     .catch((error) => {
-      testQuestions = [
-        {
-          id: 345,
-          question: "What is the capital of France?",
-          options: ["Berlin", "Madrid", "Paris", "Rome"],
-          answer: 3,
-        },
-        {
-          id: 346,
-          question: "Which planet is known as the Red Planet?",
-          options: ["Earth", "Mars", "Jupiter", "Saturn"],
-          answer: 2,
-        },
-        {
-          id: 347,
-          question: "Who wrote 'Romeo and Juliet'?",
-          options: ["Shakespeare", "Dickens", "Hemingway", "Fitzgerald"],
-          answer: 1,
-        },
-        {
-          id: 348,
-          question: "What is the largest ocean on Earth?",
-          options: ["Atlantic", "Pacific", "Indian", "Arctic"],
-          answer: 2,
-        },
-        {
-          id: 349,
-          question: "What is the square root of 64?",
-          options: ["6", "7", "8", "9"],
-          answer: 3,
-        },
-      ];
-      takeTestContainer.style.display = "none";
-      displayTestQuestion();
       // Handle API error
     });
 });

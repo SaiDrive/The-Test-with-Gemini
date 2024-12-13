@@ -1,15 +1,17 @@
 const express = require("express");
 const admin = require("firebase-admin");
 const multer = require("multer");
-const { run } = require("./index.js");
-const { processImagesFromServer } = require("./geminiApi");
+const { run } = require("./index.js"); // Assuming index.js is in the same directory
+const { processImagesFromServer } = require("./geminiApi"); // Assuming geminiApi.js is in the same directory
 const path = require("path");
 const cors = require("cors");
-const fs = require("fs").promises; // Use fs.promises for async file operations
+const fs = require("fs").promises;
 const app = express();
 const port = 3000;
 
 app.use(cors());
+app.use(express.json()); // To parse JSON request bodies
+
 // Initialize Firebase Admin SDK
 // admin.initializeApp({
 //   credential: admin.credential.cert('path/to/your/serviceAccountKey.json')
@@ -18,7 +20,7 @@ app.use(cors());
 // const db = admin.firestore();
 
 const imagesDir = path.join(__dirname, "data", "uploads");
-const dataDir = path.join(__dirname, "data"); // Define the data directory path
+const dataDir = path.join(__dirname, "data");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -31,7 +33,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Endpoint to handle file uploads and prompt
 app.post("/submit", upload.array("files"), async (req, res) => {
   try {
     let reqOptions;
@@ -49,12 +50,26 @@ app.post("/submit", upload.array("files"), async (req, res) => {
       id: Math.floor(10000 + Math.random() * 90000),
       questions,
     };
+
     const dataFilePath = path.join(dataDir, "data.json");
 
-    // Write the questionsObj to data.json
+    let existingData = [];
     try {
-      await fs.writeFile(dataFilePath, JSON.stringify(questionsObj, null, 2));
-      console.log(`Data saved to ${dataFilePath}`);
+      const rawData = await fs.readFile(dataFilePath, "utf-8");
+      existingData = JSON.parse(rawData);
+      if (!Array.isArray(existingData)) {
+        existingData = [];
+      }
+    } catch (err) {
+      // If file doesn't exist or is empty/invalid, start with an empty array
+      console.log("data.json not found, creating an empty array");
+    }
+
+    const newData = [...existingData, questionsObj]; // Append the new data
+
+    try {
+      await fs.writeFile(dataFilePath, JSON.stringify(newData, null, 2));
+      console.log(`Data appended to ${dataFilePath}`);
     } catch (err) {
       console.error(`Error writing to data.json: ${err}`);
       return res.status(500).send("Error saving data to file");
@@ -64,6 +79,35 @@ app.post("/submit", upload.array("files"), async (req, res) => {
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal server error");
+  }
+});
+
+app.get("/getquestions", async (req, res) => {
+  const testId = parseInt(req.query.testId, 10); // Get testId from query params and parse it as int
+
+  if (isNaN(testId)) {
+    return res.status(400).send("Invalid testId. Must be a number.");
+  }
+
+  try {
+    const dataFilePath = path.join(dataDir, "data.json");
+    const rawData = await fs.readFile(dataFilePath, "utf-8");
+    const jsonData = JSON.parse(rawData);
+
+    if (!Array.isArray(jsonData)) {
+      return res.status(404).send("No data found");
+    }
+
+    const foundData = jsonData.find((item) => item.id === testId);
+
+    if (foundData) {
+      res.json(foundData);
+    } else {
+      res.status(404).send("Test questions not found for the provided ID");
+    }
+  } catch (err) {
+    console.error(`Error reading from data.json: ${err}`);
+    return res.status(500).send("Error reading from data file");
   }
 });
 
@@ -82,20 +126,8 @@ app.get("/data", async (req, res) => {
     return res.status(500).send("Error reading from data file");
   }
 });
-// app.get("/data", async (req, res) => {
-//   try {
-//     const snapshot = await db.collection("yourCollectionName").get();
-//     const data = [];
-//     snapshot.forEach((doc) => {
-//       data.push(doc.data());
-//     });
-//     res.json(data);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send("Error fetching data");
-//   }
-// });
 
+// Example of a simple "add data" endpoint (adjust as needed)
 // app.post("/addData", async (req, res) => {
 //   try {
 //     const data = {

@@ -1,45 +1,47 @@
-{
-  "id": 54108,
-  "questions": [
-    {
-      "answer": 0,
-      "options": [
-        "Option 1 for question 1",
-        "Option 2 for question 1",
-        "Option 3 for question 1",
-        "Option 4 for question 1"
-      ],
-      "question": "Question 1 with Easy difficulty"
-    },
-    {
-      "answer": 2,
-      "options": [
-        "Option 1 for question 2",
-        "Option 2 for question 2",
-        "Option 3 for question 2",
-        "Option 4 for question 2"
-      ],
-      "question": "Question 2 with Easy difficulty"
-    },
-    {
-      "answer": 3,
-      "options": [
-        "Option 1 for question 3",
-        "Option 2 for question 3",
-        "Option 3 for question 3",
-        "Option 4 for question 3"
-      ],
-      "question": "Question 3 with Easy difficulty"
-    },
-    {
-      "answer": 1,
-      "options": [
-        "Option 1 for question 4",
-        "Option 2 for question 4",
-        "Option 3 for question 4",
-        "Option 4 for question 4"
-      ],
-      "question": "Question 4 with Easy difficulty"
-    }
-  ]
-}
+[
+  {
+    "id": 72227,
+    "questions": [
+      {
+        "answer": 0,
+        "options": [
+          "Rinix Web",
+          "Zeka Design",
+          "Adobe",
+          "Corel Draw"
+        ],
+        "question": "Which company is hiring a graphic designer according to the provided images?"
+      },
+      {
+        "answer": 1,
+        "options": [
+          "1 year",
+          "2 years",
+          "3 years",
+          "4 years"
+        ],
+        "question": "What is the minimum experience required for the Graphic Designer position at Rinix Web?"
+      },
+      {
+        "answer": 2,
+        "options": [
+          "Full time",
+          "Part-time",
+          "Both Full time and Part-time",
+          "Contract based"
+        ],
+        "question": "What type of employment is being offered for the Graphic Designer position at Rinix Web?"
+      },
+      {
+        "answer": 0,
+        "options": [
+          "Adobe Photoshop",
+          "Adobe InDesign",
+          "Microsoft Publisher",
+          "Gimp"
+        ],
+        "question": "Which of the following software is mentioned as a required skill for the Graphic Designer position at Rinix Web?"
+      }
+    ]
+  }
+]
