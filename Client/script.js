@@ -64,7 +64,20 @@ const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
 const questionPreviewContainer = document.getElementById(
   "questionPreviewContainer"
 );
+
+const initialButtons = document.getElementById("initialButtons");
+const takeTestButton = document.getElementById("takeTestButton");
+const createTestButton = document.getElementById("createTestButton");
+const takeTestContainer = document.getElementById("takeTestContainer");
+const testIdInput = document.getElementById("testIdInput");
+const startTestBtn = document.getElementById("startTestBtn");
+const testQuestionContainer = document.getElementById("testQuestionContainer");
 let questionsData;
+let questionTypeSpeed = 30;
+let optionDisplaySpeed = 200;
+let currentQuestionIndex = 0;
+let correctAnswersCount = 0;
+let testQuestions = [];
 setTimeout(() => {
   loadingOverlay.style.display = "none";
   mainContent.style.display = "block";
@@ -77,7 +90,15 @@ testTextarea.addEventListener("input", () => {
 testFileUpload.addEventListener("change", () => {
   testTextarea.disabled = testFileUpload.files.length > 0;
 });
+createTestButton.addEventListener("click", () => {
+  initialButtons.style.display = "none";
+  createTestContainer.style.display = "block";
+});
 
+takeTestButton.addEventListener("click", () => {
+  initialButtons.style.display = "none";
+  takeTestContainer.style.display = "block";
+});
 createTestNextBtn.addEventListener("click", () => {
   createTestContainer.style.display = "none";
   createTestOptionContainer.style.display = "block";
@@ -87,7 +108,55 @@ backBtn.addEventListener("click", () => {
   createTestOptionContainer.style.display = "none";
   createTestContainer.style.display = "block";
 });
-
+startTestBtn.addEventListener("click", () => {
+  const testId = testIdInput.value;
+  fetch("YOUR_API_ENDPOINT?testId=" + testId, {
+    method: "GET",
+  })
+    .then((response) => response.json())
+    .then((responseData) => {
+      testQuestions = responseData;
+      takeTestContainer.style.display = "none";
+      displayTestQuestion();
+    })
+    .catch((error) => {
+      testQuestions = [
+        {
+          id: 345,
+          question: "What is the capital of France?",
+          options: ["Berlin", "Madrid", "Paris", "Rome"],
+          answer: 3,
+        },
+        {
+          id: 346,
+          question: "Which planet is known as the Red Planet?",
+          options: ["Earth", "Mars", "Jupiter", "Saturn"],
+          answer: 2,
+        },
+        {
+          id: 347,
+          question: "Who wrote 'Romeo and Juliet'?",
+          options: ["Shakespeare", "Dickens", "Hemingway", "Fitzgerald"],
+          answer: 1,
+        },
+        {
+          id: 348,
+          question: "What is the largest ocean on Earth?",
+          options: ["Atlantic", "Pacific", "Indian", "Arctic"],
+          answer: 2,
+        },
+        {
+          id: 349,
+          question: "What is the square root of 64?",
+          options: ["6", "7", "8", "9"],
+          answer: 3,
+        },
+      ];
+      takeTestContainer.style.display = "none";
+      displayTestQuestion();
+      // Handle API error
+    });
+});
 submitBtn.addEventListener("click", () => {
   createTestOptionContainer.style.display = "none"; // Hide option container
 
@@ -103,7 +172,7 @@ submitBtn.addEventListener("click", () => {
   const formData = new FormData();
 
   formData.append("testId", testId); // Corrected: Only one testId
-  formData.append("noOfQustons", noOfQustons);
+  formData.append("noOfQuestion", noOfQustons);
   formData.append("noOfOptions", noOfOptions);
   formData.append("hardness", hardness);
 
@@ -196,4 +265,94 @@ function handleRegenerate() {
       console.error("Error:", error);
       // Handle API error
     });
+}
+
+function displayTestQuestion() {
+  testQuestionContainer.innerHTML = "";
+  testQuestionContainer.style.display = "block";
+
+  if (currentQuestionIndex < testQuestions.length) {
+    const questionData = testQuestions[currentQuestionIndex];
+
+    const questionContainer = document.createElement("div");
+    questionContainer.classList.add("question-container", "fade-in");
+
+    const questionText = document.createElement("p");
+    questionContainer.appendChild(questionText);
+
+    // Typewriter effect for the question
+    typeWriter(
+      questionText,
+      `${currentQuestionIndex + 1}. ${questionData.question}`,
+      0
+    );
+
+    const optionsContainer = document.createElement("div");
+    optionsContainer.classList.add("options-container");
+    let optionIndex = 0;
+    const displayOption = () => {
+      if (optionIndex < questionData.options.length) {
+        const optionInput = document.createElement("input");
+        optionInput.type = "radio";
+        optionInput.name = `question-${currentQuestionIndex}`;
+        optionInput.value = optionIndex + 1; // Correct answer will match this
+        const optionLabel = document.createElement("label");
+        optionLabel.textContent = questionData.options[optionIndex];
+        // Wrap input and label in a div
+        const optionDiv = document.createElement("div");
+        optionDiv.classList.add("option", "fade-in");
+        optionDiv.appendChild(optionLabel);
+        optionDiv.appendChild(optionInput);
+        // Add an event listener to the option div to select the radio button when clicked
+        optionDiv.addEventListener("click", () => {
+          optionInput.checked = true;
+        });
+        // Append the optionDiv to the container
+        optionsContainer.appendChild(optionDiv);
+        optionIndex++;
+        // Recursively call displayOption with delay
+        setTimeout(displayOption, optionDisplaySpeed);
+      }
+    };
+
+    displayOption();
+
+    questionContainer.appendChild(optionsContainer);
+    testQuestionContainer.appendChild(questionContainer);
+
+    const nextButton = document.createElement("button");
+    nextButton.textContent = "Next";
+    nextButton.classList.add("submit");
+    nextButton.addEventListener("click", () => handleTestNext(questionData));
+    testQuestionContainer.appendChild(nextButton);
+  } else {
+    testQuestionContainer.innerHTML = "";
+    const resultDiv = document.createElement("div");
+    resultDiv.textContent = `Test Complete! You answered ${correctAnswersCount} out of ${testQuestions.length} questions correctly.`;
+    testQuestionContainer.appendChild(resultDiv);
+  }
+}
+function handleTestNext(questionData) {
+  const selectedOption = document.querySelector(
+    `input[name="question-${currentQuestionIndex}"]:checked`
+  );
+  if (selectedOption) {
+    const selectedAnswer = parseInt(selectedOption.value);
+    if (selectedAnswer === questionData.answer) {
+      correctAnswersCount++;
+    }
+    currentQuestionIndex++;
+    displayTestQuestion();
+  } else {
+    alert("Please select an answer.");
+  }
+}
+function typeWriter(element, text, charIndex) {
+  if (charIndex < text.length) {
+    element.textContent += text.charAt(charIndex);
+    setTimeout(
+      () => typeWriter(element, text, charIndex + 1),
+      questionTypeSpeed
+    );
+  }
 }

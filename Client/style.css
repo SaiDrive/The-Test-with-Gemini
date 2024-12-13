@@ -32,7 +32,6 @@ body {
 .options-container {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between; /* Distribute options horizontally */
   margin-bottom: 10px;
 }
 
@@ -42,8 +41,11 @@ body {
   border: 1px solid #ddd;
   border-radius: 3px;
   cursor: pointer;
-  width: 48%; /* Adjust as necessary */
-  box-sizing: border-box; /* Include padding and border in the width */
+  width: 100%;
+  box-sizing: border-box;
+}
+.option input[type="radio"] {
+  margin-right: 5px;
 }
 
 .key-container {
@@ -59,8 +61,6 @@ body {
   width: 90%;
   max-width: 800px;
 }
-
-
 .regenerate-btn {
   background-color: #007bff;
   color: #fff;
@@ -78,7 +78,11 @@ h2 {
 .input-group {
   margin-bottom: 15px;
 }
-
+.initial-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
 .radio-input-group {
   display: flex;
   justify-content: space-between;
@@ -88,7 +92,14 @@ h2 {
   display: block;
   margin-bottom: 5px;
 }
-
+.btn {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 3px;
+  cursor: pointer;
+}
 .test-textarea {
   width: 90%;
   height: 100px;
@@ -126,10 +137,30 @@ h2 {
 .questionPreviewContainer {
   display: none;
 }
+.takeTestContainer {
+  display: none;
+}
+.testQuestionContainer {
+  display: none;
+}
 
 @media screen and (max-width: 600px) {
   .mainDiv {
     width: 90vw;
     padding: 20px;
   }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0; /* Initially, the element is invisible */
+  }
+  100% {
+    opacity: 1; /* Fully visible at the end */
+  }
+}
+
+/* Apply the fade-in effect to a class */
+.fade-in {
+  animation: fadeIn 500ms ease-in; /* 2 seconds, easing for smooth effect */
 }

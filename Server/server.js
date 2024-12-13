@@ -29,17 +29,11 @@ const upload = multer({ storage: storage });
 // Endpoint to handle file uploads and prompt
 app.post("/submit", upload.array("files"), async (req, res) => {
   try {
+    const { testId, noOfQuestion, noOfOptions, hardness } = req.body;
+    console.log(testId, noOfQuestion, noOfOptions, hardness);
     const files = req.files.map((eachFile) => eachFile.path);
-    processImagesFromServer(files);
+    // processImagesFromServer(files);
     // Validate prompt and files (optional: check size, format, etc.)
-
-    // Construct the request body for Gemini
-    // const requestBody = {
-    //   prompt,
-    //   files: files.map((file) => ({
-    //     localFile: file.path,
-    //   })),
-    // };
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal server error");

@@ -11,8 +11,29 @@
       <div class="loading-text" id="loadingText">Loading...</div>
     </div>
 
-    <div class="mainDiv" style="display: none" id="mainContent">
-      <div class="createTestContainer" id="createTestContainer">
+    <div class="mainDiv" id="mainContent">
+      <div class="initial-buttons" id="initialButtons">
+        <button class="btn" id="createTestButton">Create Test</button>
+        <button class="btn" id="takeTestButton">Take Test</button>
+      </div>
+      <div
+        class="takeTestContainer"
+        id="takeTestContainer"
+        style="display: none"
+      >
+        <h2>Take Test</h2>
+        <div class="input-group">
+          <label for="testIdInput">Enter Test ID:</label>
+          <input type="number" id="testIdInput" required />
+        </div>
+        <button class="submit" id="startTestBtn">Start Test</button>
+      </div>
+
+      <div
+        class="createTestContainer"
+        id="createTestContainer"
+        style="display: none"
+      >
         <h2>Create Test</h2>
         <div class="input-group">
           <textarea
@@ -22,7 +43,7 @@
             placeholder="Enter test instructions here"
           ></textarea>
           <p>Or</p>
-          <label for="" testFileUpload>Upload images or PDF:</label>
+          <label for="" testFileUpload>Choose a File:</label>
           <input type="file" id="testFileUpload" accept=".pdf,.jpg" multiple />
         </div>
         <button class="create-test-next-btn btn" id="createTestNextBtn">
@@ -72,6 +93,11 @@
       <div
         class="questionPreviewContainer"
         id="questionPreviewContainer"
+        style="display: none"
+      ></div>
+      <div
+        class="testQuestionContainer"
+        id="testQuestionContainer"
         style="display: none"
       ></div>
     </div>
