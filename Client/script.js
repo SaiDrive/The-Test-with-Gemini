@@ -131,9 +131,11 @@ submitBtn.addEventListener("click", async () => {
     formData.append("textData", testTextarea.value);
   }
 
+  // Handle image uploads using fetch API (prevents page reload)
   if (testFileUpload.files.length > 0) {
     for (let i = 0; i < testFileUpload.files.length; i++) {
-      formData.append("files", testFileUpload.files[i]);
+      const file = testFileUpload.files[i];
+      formData.append("files", file);
     }
   }
 
@@ -141,11 +143,17 @@ submitBtn.addEventListener("click", async () => {
     method: "POST",
     body: formData,
   };
-  const response = await fetch("http://localhost:3000/submit", options);
-  const { questionsData } = await response.json();
-  const { questions } = JSON.parse(questionsData);
-  displayQuestions(questions);
-  createTestOptionContainer.style.display = "none"; // Hide option container
+
+  try {
+    const response = await fetch("http://localhost:3000/submit", options);
+    const { questionsData } = await response.json();
+    const { questions } = JSON.parse(questionsData);
+    displayQuestions(questions);
+    createTestOptionContainer.style.display = "none"; // Hide option container
+  } catch (error) {
+    console.error("Error submitting form:", error);
+    // Handle errors gracefully, e.g., display an error message to the user
+  }
 });
 
 function displayQuestions(questions) {
