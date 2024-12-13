@@ -110,9 +110,7 @@ startTestBtn.addEventListener("click", () => {
     });
 });
 
-
-submitBtn.addEventListener("click", () => {
-  console.log(1);
+submitBtn.addEventListener("click", async () => {
   const noOfQustons = questionCountInput.value;
   const noOfOptions = optionCountInput.value;
   let hardness;
@@ -139,16 +137,15 @@ submitBtn.addEventListener("click", () => {
     }
   }
 
-  const getData = async () => {
-    const options = {
-      method: "POST",
-      body: formData,
-    };
-    const response = await fetch("http://localhost:3000/submit", options);
-    const data = await response.json();
-    console.log(data);
+  const options = {
+    method: "POST",
+    body: formData,
   };
-  getData();
+  const response = await fetch("http://localhost:3000/submit", options);
+  const { questionsData } = await response.json();
+  const { questions } = JSON.parse(questionsData);
+  displayQuestions(questions);
+  createTestOptionContainer.style.display = "none"; // Hide option container
 });
 
 function displayQuestions(questions) {

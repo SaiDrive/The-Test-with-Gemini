@@ -140,9 +140,8 @@ async function generateQuestions(
     if (result && result.response && result.response.text) {
       try {
         // return JSON.parse(result.response.text);
-        console.log(result.response.text());
 
-        return result.response.text;
+        return result.response.text();
       } catch (jsonError) {
         console.error("Error parsing JSON response:", jsonError);
         console.error("Raw response text:", result.response.text);
@@ -160,11 +159,9 @@ async function generateQuestions(
 
 async function run(reqOptions) {
   try {
-    console.log(reqOptions);
     const questionsFromText = await generateQuestions(...reqOptions);
-
     if (questionsFromText) {
-      return JSON.stringify(questionsFromText, null, 2);
+      return questionsFromText;
       // console.log(JSON.stringify(questionsFromText, null, 2));
     }
 
