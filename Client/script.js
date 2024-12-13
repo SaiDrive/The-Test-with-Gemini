@@ -1,51 +1,3 @@
-const questions = [
-  {
-    question:
-      "What is the result of the following arithmetic operation in JavaScript: (3 + 5) * 4 - 6?",
-    options: ["26", "32", "30", "28"],
-    answer: "1",
-  },
-  {
-    question:
-      "What is the value of x after this code executes: 'let x = 5; if (x > 3) { x = 10; } else { x = 0; }'?",
-    options: ["5", "10", "3", "0"],
-    answer: "2",
-  },
-  {
-    question:
-      "What value will 'result' hold after this switch case: 'let fruit = 'apple'; let result; switch (fruit) { case 'banana': result = 'yellow'; break; case 'apple': result = 'red'; break; default: result = 'unknown'; }'?",
-    options: ["'yellow'", "'red'", "'apple'", "'unknown'"],
-    answer: "2",
-  },
-  {
-    question:
-      "What will be the output of 'greet('Alice')' for the function: 'function greet(name) { return 'Hello, ' + name + '!'; }'?",
-    options: [
-      "'Hello, Alice!'",
-      "'Hello, name!'",
-      "'Hello, ' + name + '!'",
-      "It will throw an error",
-    ],
-    answer: "1",
-  },
-  {
-    question:
-      "Given the code: 'let num = 7; let result; if (num > 5) { if (num < 10) { result = 'Between 5 and 10'; } else { result = 'Greater than 10'; } } else { result = 'Less than or equal to 5'; }', what is the value of 'result'?",
-    options: [
-      "'Less than or equal to 5'",
-      "'Between 5 and 10'",
-      "'Greater than 10'",
-      "undefined",
-    ],
-    answer: "2",
-  },
-  {
-    question:
-      "What will 'calculate(3, 7)' return for the function: 'function calculate(a, b) { return (a * b) + (a / b); }'?",
-    options: ["21.4285", "22", "24", "21"],
-    answer: "1",
-  },
-];
 const loadingOverlay = document.getElementById("loadingOverlay");
 const loadingText = document.getElementById("loadingText");
 const mainContent = document.getElementById("mainContent");
@@ -157,9 +109,10 @@ startTestBtn.addEventListener("click", () => {
       // Handle API error
     });
 });
-submitBtn.addEventListener("click", () => {
-  createTestOptionContainer.style.display = "none"; // Hide option container
 
+
+submitBtn.addEventListener("click", () => {
+  console.log(1);
   const noOfQustons = questionCountInput.value;
   const noOfOptions = optionCountInput.value;
   let hardness;
@@ -186,21 +139,16 @@ submitBtn.addEventListener("click", () => {
     }
   }
 
-  fetch("http://localhost:3000/submit", {
-    method: "POST",
-    body: formData,
-  })
-    .then((response) => response.json())
-    .then((responseData) => {
-      questionsData = responseData;
-      // displayQuestions(responseData);
-    })
-    .catch((error) => {
-      displayQuestions(questions);
-
-      // console.error("Error:", error);
-      // Handle API error
-    });
+  const getData = async () => {
+    const options = {
+      method: "POST",
+      body: formData,
+    };
+    const response = await fetch("http://localhost:3000/submit", options);
+    const data = await response.json();
+    console.log(data);
+  };
+  getData();
 });
 
 function displayQuestions(questions) {

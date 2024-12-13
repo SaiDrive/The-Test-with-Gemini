@@ -1,11 +1,14 @@
 const express = require("express");
 const admin = require("firebase-admin");
 const multer = require("multer");
+const { run } = require("./index.js");
 const { processImagesFromServer } = require("./geminiApi");
 const path = require("path");
+const cors = require("cors");
 const app = express();
 const port = 3000;
 
+app.use(cors());
 // Initialize Firebase Admin SDK
 // admin.initializeApp({
 //   credential: admin.credential.cert('path/to/your/serviceAccountKey.json')
@@ -29,11 +32,18 @@ const upload = multer({ storage: storage });
 // Endpoint to handle file uploads and prompt
 app.post("/submit", upload.array("files"), async (req, res) => {
   try {
-    const { testId, noOfQuestion, noOfOptions, hardness } = req.body;
-    console.log(testId, noOfQuestion, noOfOptions, hardness);
-    const files = req.files.map((eachFile) => eachFile.path);
-    // processImagesFromServer(files);
-    // Validate prompt and files (optional: check size, format, etc.)
+    let reqOptions;
+    const { textData, testId, noOfQuestion, noOfOptions, hardness } = req.body;
+    if (textData) {
+      reqOptions = [textData, "text", noOfOptions, noOfOptions, hardness];
+    } else {
+      const files = req.files.map((eachFile) => eachFile.path);
+      reqOptions = [files, "image", noOfOptions, noOfOptions, hardness];
+    }
+
+    const questionsData = run(reqOptions);
+
+    res.send({ questionsData });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal server error");

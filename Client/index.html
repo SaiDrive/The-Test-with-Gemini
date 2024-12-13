@@ -64,11 +64,18 @@
         <h2>Test Options</h2>
         <div class="input-group">
           <label for="questionCount">Number of Questions:</label>
-          <input type="number" id="questionCount" min="1" required />
+          <input type="number" id="questionCount" min="1" value="4" required />
         </div>
         <div class="input-group">
           <label for="optionCount">Number of Options per Question (2-4):</label>
-          <input type="number" id="optionCount" min="2" max="4" required />
+          <input
+            type="number"
+            id="optionCount"
+            min="2"
+            max="4"
+            value="4"
+            required
+          />
         </div>
         <div class="input-group radio-input-group">
           <label for="difficultyLevel">Difficulty Level:</label>
@@ -80,6 +87,7 @@
               name="difficulty"
               value="Easy"
               required
+              selected
             />
             <label for="easy">Easy</label>
           </div>
