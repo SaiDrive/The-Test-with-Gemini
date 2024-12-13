@@ -73,7 +73,7 @@ const testIdInput = document.getElementById("testIdInput");
 const startTestBtn = document.getElementById("startTestBtn");
 const testQuestionContainer = document.getElementById("testQuestionContainer");
 let questionsData;
-let questionTypeSpeed = 30;
+let questionTypeSpeed = 50;
 let optionDisplaySpeed = 200;
 let currentQuestionIndex = 0;
 let correctAnswersCount = 0;
