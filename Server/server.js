@@ -41,7 +41,7 @@ app.post("/submit", upload.array("files"), async (req, res) => {
       reqOptions = [files, "image", noOfOptions, noOfOptions, hardness];
     }
 
-    const questionsData = run(reqOptions);
+    const questionsData = await run(reqOptions);
 
     res.send({ questionsData });
   } catch (error) {
