@@ -1,7 +1,8 @@
-const {
-    GoogleGenerativeAI,
-    GoogleAIFileManager
-} = require("@google/generative-ai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleAIFileManager } = require("@google/generative-ai/server");
+const dotenv = require("dotenv");
+dotenv.config();
+
 const fs = require('fs').promises;
 const path = require('path');
 
