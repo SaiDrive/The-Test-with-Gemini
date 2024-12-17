@@ -27,7 +27,7 @@ const testQuestionContainer = document.getElementById("testQuestionContainer");
 const testIdCon = document.getElementById("testIdCon");
 const testPreviewId = document.getElementById("testPreviewId");
 const takeTestButtonId = document.querySelector(".btn");
-
+mainContent.style.display = "none";
 let questionsData;
 let questionTypeSpeed = 50;
 let optionDisplaySpeed = 200;
