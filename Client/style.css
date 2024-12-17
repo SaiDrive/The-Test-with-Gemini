@@ -10,6 +10,12 @@ body {
   padding: 20px;
 }
 
+.loading-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .loading-text {
   color: #000;
   font-size: 2em;
@@ -142,6 +148,11 @@ h2 {
 }
 .testQuestionContainer {
   display: none;
+}
+
+.test-preview-id {
+  color: #34ff06;
+  text-align: center;
 }
 
 @media screen and (max-width: 600px) {

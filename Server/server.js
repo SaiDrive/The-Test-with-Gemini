@@ -1,28 +1,32 @@
 const express = require("express");
-const admin = require("firebase-admin");
 const multer = require("multer");
-const { run } = require("./index.js"); // Assuming index.js is in the same directory
-const { processImagesFromServer } = require("./geminiApi"); // Assuming geminiApi.js is in the same directory
+const { run } = require("./index.js");
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs").promises;
+const {
+  db,
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  storage,
+  updateDoc,
+  getDocs,
+  getDoc,
+} = require("./firebase.config");
 const app = express();
 const port = 3000;
 
 app.use(cors());
-app.use(express.json()); // To parse JSON request bodies
-
-// Initialize Firebase Admin SDK
-// admin.initializeApp({
-//   credential: admin.credential.cert('path/to/your/serviceAccountKey.json')
-// });
-
-// const db = admin.firestore();
+app.use(express.json());
 
 const imagesDir = path.join(__dirname, "data", "uploads");
-const dataDir = path.join(__dirname, "data");
 
-const storage = multer.diskStorage({
+const storageConfig = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, imagesDir);
   },
@@ -31,117 +35,122 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storageConfig });
 
-app.post("/submit", upload.array("files"), async (req, res) => {
+app.post("/generate", upload.array("files"), async (req, res) => {
   try {
     let reqOptions;
     const { textData, testId, noOfQuestion, noOfOptions, hardness } = req.body;
-    if (textData) {
-      reqOptions = [textData, "text", noOfOptions, noOfOptions, hardness];
-    } else {
-      const files = req.files.map((eachFile) => eachFile.path);
-      reqOptions = [files, "image", noOfOptions, noOfOptions, hardness];
-    }
 
+    const files = req.files ? req.files.map((eachFile) => eachFile.path) : [];
+
+    if (textData) {
+      reqOptions = [textData, "text", noOfQuestion, noOfOptions, hardness];
+    } else if (files.length > 0) {
+      reqOptions = [files, "image", noOfQuestion, noOfOptions, hardness];
+    } else {
+      return res.status(400).send("No text or files provided");
+    }
     const questionsData = await run(reqOptions);
     const { questions } = JSON.parse(questionsData);
+
     const questionsObj = {
-      id: Math.floor(10000 + Math.random() * 90000),
+      id: testId,
       questions,
     };
 
-    const dataFilePath = path.join(dataDir, "data.json");
-
-    let existingData = [];
-    try {
-      const rawData = await fs.readFile(dataFilePath, "utf-8");
-      existingData = JSON.parse(rawData);
-      if (!Array.isArray(existingData)) {
-        existingData = [];
-      }
-    } catch (err) {
-      // If file doesn't exist or is empty/invalid, start with an empty array
-      console.log("data.json not found, creating an empty array");
-    }
-
-    const newData = [...existingData, questionsObj]; // Append the new data
-
-    try {
-      await fs.writeFile(dataFilePath, JSON.stringify(newData, null, 2));
-      console.log(`Data appended to ${dataFilePath}`);
-    } catch (err) {
-      console.error(`Error writing to data.json: ${err}`);
-      return res.status(500).send("Error saving data to file");
-    }
-
-    res.send({ questionsData });
+    res.send({ questionsObj });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal server error");
   }
 });
-
-app.get("/getquestions", async (req, res) => {
-  const testId = parseInt(req.query.testId, 10); // Get testId from query params and parse it as int
-
-  if (isNaN(testId)) {
-    return res.status(400).send("Invalid testId. Must be a number.");
-  }
-
+app.post("/submitTest", upload.array("files"), async (req, res) => {
   try {
-    const dataFilePath = path.join(dataDir, "data.json");
-    const rawData = await fs.readFile(dataFilePath, "utf-8");
-    const jsonData = JSON.parse(rawData);
+    const testId = req.query.testId;
+    const { questions } = req.body;
 
-    if (!Array.isArray(jsonData)) {
-      return res.status(404).send("No data found");
-    }
+    const files = req.files ? req.files.map((eachFile) => eachFile.path) : [];
+    const uploadedFiles = await Promise.all(
+      (req.files || []).map(async (file) => {
+        const filePath = file.path;
+        const fileName = file.filename;
+        const fileBuffer = await fs.readFile(filePath);
 
-    const foundData = jsonData.find((item) => item.id === testId);
+        // Upload to Firebase Storage
+        const storageRef = ref(storage, `test-images/${testId}/${fileName}`);
+        const snapshot = await uploadBytes(storageRef, fileBuffer);
+        const imageUrl = await getDownloadURL(snapshot.ref);
 
-    if (foundData) {
-      res.json(foundData);
-    } else {
-      res.status(404).send("Test questions not found for the provided ID");
-    }
-  } catch (err) {
-    console.error(`Error reading from data.json: ${err}`);
-    return res.status(500).send("Error reading from data file");
+        // Delete local image file after it's been uploaded to storage
+        await fs.unlink(filePath);
+
+        return imageUrl;
+      })
+    );
+    const testData = {
+      testId: testId,
+      questions: questions,
+      images: uploadedFiles,
+    };
+
+    await setDoc(doc(db, "tests", testId), testData, { merge: true });
+
+    res.send({ message: "success" });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send("Internal server error");
   }
 });
+app.post("/regenerate", upload.array("files"), async (req, res) => {
+  try {
+    let reqOptions;
+    const { textData, testId, noOfQuestion, noOfOptions, hardness } = req.body;
+    const files = req.files ? req.files.map((eachFile) => eachFile.path) : [];
 
+    if (textData) {
+      reqOptions = [textData, "text", noOfQuestion, noOfOptions, hardness];
+    } else if (files.length > 0) {
+      reqOptions = [files, "image", noOfQuestion, noOfOptions, hardness];
+    } else {
+      return res.status(400).send("No text or files provided");
+    }
+    const questionsData = await run(reqOptions);
+    const { questions } = JSON.parse(questionsData);
+    const questionsObj = {
+      id: testId,
+      questions,
+    };
+    res.send({ id: testId, questions });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+app.get("/getquestions", async (req, res) => {
+  const testId = req.query.testId;
+
+  if (!testId) {
+    return res.status(400).send("Test ID is required.");
+  }
+  try {
+    const docRef = doc(db, "tests", testId);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      return res.status(404).send("Test not found.");
+    }
+    const data = docSnap.data();
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send("Error fetching from Firestore");
+  }
+});
 app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
-
-app.get("/data", async (req, res) => {
-  try {
-    const dataFilePath = path.join(dataDir, "data.json");
-    const rawData = await fs.readFile(dataFilePath, "utf-8");
-    const jsonData = JSON.parse(rawData);
-    res.json(jsonData);
-  } catch (err) {
-    console.error(`Error reading from data.json: ${err}`);
-    return res.status(500).send("Error reading from data file");
-  }
-});
-
-// Example of a simple "add data" endpoint (adjust as needed)
-// app.post("/addData", async (req, res) => {
-//   try {
-//     const data = {
-//       // Your data fields here
-//       name: "John Doe",
-//       age: 30,
-//     };
-//     await db.collection("yourCollectionName").add(data);
-//     res.send("Data added successfully");
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send("Error adding data");
-//   }
-// });
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);

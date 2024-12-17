@@ -24,16 +24,37 @@ const takeTestContainer = document.getElementById("takeTestContainer");
 const testIdInput = document.getElementById("testIdInput");
 const startTestBtn = document.getElementById("startTestBtn");
 const testQuestionContainer = document.getElementById("testQuestionContainer");
+const previewTestId = document.getElementById("previewTestId");
 let questionsData;
 let questionTypeSpeed = 50;
 let optionDisplaySpeed = 200;
 let currentQuestionIndex = 0;
 let correctAnswersCount = 0;
+const apiUrl = "http://192.168.55.103:3000";
 let testQuestions = [];
+let globalQuestions = [];
 setTimeout(() => {
-  loadingOverlay.style.display = "none";
+  hideLoading();
   mainContent.style.display = "block";
 }, 100);
+function showLoading() {
+  loadingOverlay.style.display = "flex";
+  mainContent.style.display = "none"; // Hide main content during loading
+  loadingText.textContent = "";
+  typeWriter(loadingText, "Loading...", 0, 100);
+}
+function typeWriter(element, text, charIndex, speed) {
+  if (charIndex < text.length) {
+    element.textContent += text.charAt(charIndex);
+    setTimeout(() => typeWriter(element, text, charIndex + 1, speed), speed);
+  }
+}
+
+// Helper function to hide the loading overlay
+function hideLoading() {
+  loadingOverlay.style.display = "none";
+  mainContent.style.display = "block"; // Show main content after loading
+}
 
 testTextarea.addEventListener("input", () => {
   testFileUpload.disabled = testTextarea.value.trim() !== "";
@@ -62,7 +83,9 @@ backBtn.addEventListener("click", () => {
 });
 startTestBtn.addEventListener("click", () => {
   const testId = testIdInput.value;
-  fetch("http://localhost:3000/getquestions?testId=" + testId, {
+  showLoading();
+  testQuestionContainer.innerHTML = ""; // Clear previous questions
+  fetch(`${apiUrl}/getquestions?testId=${testId}`, {
     method: "GET",
   })
     .then((response) => response.json())
@@ -71,8 +94,10 @@ startTestBtn.addEventListener("click", () => {
       testQuestions = questions;
       displayTestQuestion();
       takeTestContainer.style.display = "none";
+      hideLoading();
     })
     .catch((error) => {
+      hideLoading();
       // Handle API error
     });
 });
@@ -112,19 +137,24 @@ submitBtn.addEventListener("click", async () => {
   };
 
   try {
-    const response = await fetch("http://localhost:3000/submit", options);
-    const { questionsData } = await response.json();
-    const { questions } = JSON.parse(questionsData);
-    displayQuestions(questions);
+    showLoading();
+    const response = await fetch(`${apiUrl}/generate`, options);
+    const { questionsObj } = await response.json();
+    const { id, questions } = questionsObj;
+    displayQuestions(id, questions);
     createTestOptionContainer.style.display = "none"; // Hide option container
+    hideLoading();
   } catch (error) {
+    hideLoading();
     console.error("Error submitting form:", error);
     // Handle errors gracefully, e.g., display an error message to the user
   }
 });
 
-function displayQuestions(questions) {
-  questionPreviewContainer.innerHTML = "";
+function displayQuestions(id, questions) {
+  globalQuestions = questions;
+  questionPreviewContainer.innerHTML = `<h1 class="test-preview-id" > TEST ID - ${id}</h1>`;
+
   questionPreviewContainer.style.display = "block";
 
   questions.forEach((questionData, index) => {
@@ -163,25 +193,95 @@ function displayQuestions(questions) {
   const submitTest = document.createElement("button");
   submitTest.textContent = "Submit Test";
   submitTest.classList.add("submit");
-  submitTest.addEventListener("click", () => {
-    console.log("submitted");
-  });
+  submitTest.addEventListener("click", handleSubmitTest);
   buttonContainer.appendChild(regenerateBtn);
   buttonContainer.appendChild(submitTest);
   questionPreviewContainer.appendChild(buttonContainer);
 }
+function handleSubmitTest() {
+  const testId = document
+    .querySelector(".test-preview-id")
+    .textContent.split("-")[1]
+    .trim();
+  showLoading();
+  fetch(`${apiUrl}/submitTest?testId=${testId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ questions: globalQuestions }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        questionPreviewContainer.style.display = "none";
+        return fetch(`${apiUrl}/getquestions?testId=${testId}`, {
+          method: "GET",
+        });
+      } else {
+        hideLoading();
+        alert("Something went wrong, while saving test.");
+      }
+    })
+    .then((response) => response.json())
+    .then((responseData) => {
+      const { questions } = responseData;
+      testQuestions = questions;
+      hideLoading();
+      alert("Test Saved");
+      location.reload();
+    })
+    .catch((error) => {
+      hideLoading();
+      console.error("Error:", error);
+      // Handle API error
+    });
+}
 
 function handleRegenerate() {
-  fetch("YOUR_API_ENDPOINT", {
+  const noOfQustons = questionCountInput.value;
+  const noOfOptions = optionCountInput.value;
+  let hardness;
+  difficultyRadios.forEach((radio) => {
+    if (radio.checked) {
+      hardness = radio.value;
+    }
+  });
+  const testId = document
+    .querySelector(".test-preview-id")
+    .textContent.split("-")[1]
+    .trim();
+  const formData = new FormData();
+
+  formData.append("testId", testId); // Corrected: Only one testId
+  formData.append("noOfQuestion", noOfQustons);
+  formData.append("noOfOptions", noOfOptions);
+  formData.append("hardness", hardness);
+
+  if (testTextarea.value) {
+    formData.append("textData", testTextarea.value);
+  }
+
+  // Handle image uploads using fetch API (prevents page reload)
+  if (testFileUpload.files.length > 0) {
+    for (let i = 0; i < testFileUpload.files.length; i++) {
+      const file = testFileUpload.files[i];
+      formData.append("files", file);
+    }
+  }
+
+  showLoading();
+  fetch(`${apiUrl}/regenerate`, {
     method: "POST",
     body: formData,
   })
     .then((response) => response.json())
     .then((responseData) => {
-      questionsData = responseData;
-      displayQuestions(responseData);
+      const { id, questions } = responseData;
+      displayQuestions(id, questions);
+      hideLoading();
     })
     .catch((error) => {
+      hideLoading();
       console.error("Error:", error);
       // Handle API error
     });
@@ -257,7 +357,8 @@ function handleTestNext(questionData) {
     `input[name="question-${currentQuestionIndex}"]:checked`
   );
   if (selectedOption) {
-    const selectedAnswer = parseInt(selectedOption.value);
+    const selectedAnswer = parseInt(selectedOption.value) - 1;
+    console.log(selectedAnswer, questionData.answer);
     if (selectedAnswer === questionData.answer) {
       correctAnswersCount++;
     }
@@ -267,12 +368,9 @@ function handleTestNext(questionData) {
     alert("Please select an answer.");
   }
 }
-function typeWriter(element, text, charIndex) {
+function typeWriter(element, text, charIndex, speed) {
   if (charIndex < text.length) {
     element.textContent += text.charAt(charIndex);
-    setTimeout(
-      () => typeWriter(element, text, charIndex + 1),
-      questionTypeSpeed
-    );
+    setTimeout(() => typeWriter(element, text, charIndex + 1, speed), speed);
   }
 }

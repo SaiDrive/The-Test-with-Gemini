@@ -9,6 +9,56 @@
   <body>
     <div class="loading-overlay" id="loadingOverlay">
       <div class="loading-text" id="loadingText">Loading...</div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+        <radialGradient
+          id="a12"
+          cx=".66"
+          fx=".66"
+          cy=".3125"
+          fy=".3125"
+          gradientTransform="scale(1)"
+        >
+          <stop offset="0" stop-color="#000"></stop>
+          <stop offset=".3" stop-color="#000" stop-opacity=".9"></stop>
+          <stop offset=".6" stop-color="#000" stop-opacity=".6"></stop>
+          <stop offset=".8" stop-color="#000" stop-opacity=".3"></stop>
+          <stop offset="1" stop-color="#000" stop-opacity="0"></stop>
+        </radialGradient>
+        <circle
+          transform-origin="center"
+          fill="none"
+          stroke="url(#a12)"
+          stroke-width="15"
+          stroke-linecap="round"
+          stroke-dasharray="200 1000"
+          stroke-dashoffset="0"
+          cx="100"
+          cy="100"
+          r="70"
+        >
+          <animateTransform
+            type="rotate"
+            attributeName="transform"
+            calcMode="spline"
+            dur="2"
+            values="360;0"
+            keyTimes="0;1"
+            keySplines="0 0 1 1"
+            repeatCount="indefinite"
+          ></animateTransform>
+        </circle>
+        <circle
+          transform-origin="center"
+          fill="none"
+          opacity=".2"
+          stroke="#000"
+          stroke-width="15"
+          stroke-linecap="round"
+          cx="100"
+          cy="100"
+          r="70"
+        ></circle>
+      </svg>
     </div>
 
     <div class="mainDiv" id="mainContent">
@@ -64,11 +114,18 @@
         <h2>Test Options</h2>
         <div class="input-group">
           <label for="questionCount">Number of Questions:</label>
-          <input type="number" id="questionCount" min="1" required />
+          <input type="number" id="questionCount" min="1" required value="2" />
         </div>
         <div class="input-group">
           <label for="optionCount">Number of Options per Question (2-4):</label>
-          <input type="number" id="optionCount" min="2" max="4" required />
+          <input
+            type="number"
+            id="optionCount"
+            min="2"
+            max="4"
+            required
+            value="2"
+          />
         </div>
         <div class="input-group radio-input-group">
           <label for="difficultyLevel">Difficulty Level:</label>
@@ -80,7 +137,7 @@
               name="difficulty"
               value="Easy"
               required
-              selected
+              checked
             />
             <label for="easy">Easy</label>
           </div>
