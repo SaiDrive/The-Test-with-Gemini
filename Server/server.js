@@ -31,7 +31,9 @@ const storageConfig = multer.diskStorage({
     cb(null, imagesDir);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
+    const fileExtension = path.extname(file.originalname);
+    const baseName = path.basename(file.originalname, fileExtension);
+    cb(null, `${baseName}-${Date.now()}${fileExtension}`);
   },
 });
 
@@ -47,7 +49,12 @@ app.post("/generate", upload.array("files"), async (req, res) => {
     if (textData) {
       reqOptions = [textData, "text", noOfQuestion, noOfOptions, hardness];
     } else if (files.length > 0) {
-      reqOptions = [files, "image", noOfQuestion, noOfOptions, hardness];
+      const fileTypes = files.every((file) =>
+        file.toLowerCase().endsWith(".pdf")
+      )
+        ? "pdf"
+        : "image";
+      reqOptions = [files, fileTypes, noOfQuestion, noOfOptions, hardness];
     } else {
       return res.status(400).send("No text or files provided");
     }
@@ -111,7 +118,12 @@ app.post("/regenerate", upload.array("files"), async (req, res) => {
     if (textData) {
       reqOptions = [textData, "text", noOfQuestion, noOfOptions, hardness];
     } else if (files.length > 0) {
-      reqOptions = [files, "image", noOfQuestion, noOfOptions, hardness];
+      const fileTypes = files.every((file) =>
+        file.toLowerCase().endsWith(".pdf")
+      )
+        ? "pdf"
+        : "image";
+      reqOptions = [files, fileTypes, noOfQuestion, noOfOptions, hardness];
     } else {
       return res.status(400).send("No text or files provided");
     }
