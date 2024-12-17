@@ -155,6 +155,10 @@ h2 {
   text-align: center;
 }
 
+.display-none {
+  display: none;
+}
+
 @media screen and (max-width: 600px) {
   .mainDiv {
     width: 90vw;

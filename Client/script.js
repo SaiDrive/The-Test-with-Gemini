@@ -24,22 +24,27 @@ const takeTestContainer = document.getElementById("takeTestContainer");
 const testIdInput = document.getElementById("testIdInput");
 const startTestBtn = document.getElementById("startTestBtn");
 const testQuestionContainer = document.getElementById("testQuestionContainer");
-const previewTestId = document.getElementById("previewTestId");
+const testIdCon = document.getElementById("testIdCon");
+const testPreviewId = document.getElementById("testPreviewId");
+const takeTestButtonId = document.querySelector(".btn");
+
 let questionsData;
 let questionTypeSpeed = 50;
 let optionDisplaySpeed = 200;
 let currentQuestionIndex = 0;
 let correctAnswersCount = 0;
-const apiUrl = "http://192.168.55.103:3000";
+const apiUrl = "http://localhost:3000";
 let testQuestions = [];
 let globalQuestions = [];
+
 setTimeout(() => {
   hideLoading();
   mainContent.style.display = "block";
 }, 100);
+
 function showLoading() {
   loadingOverlay.style.display = "flex";
-  mainContent.style.display = "none"; // Hide main content during loading
+  mainContent.style.display = "none";
   loadingText.textContent = "";
   typeWriter(loadingText, "Loading...", 0, 100);
 }
@@ -49,11 +54,9 @@ function typeWriter(element, text, charIndex, speed) {
     setTimeout(() => typeWriter(element, text, charIndex + 1, speed), speed);
   }
 }
-
-// Helper function to hide the loading overlay
 function hideLoading() {
   loadingOverlay.style.display = "none";
-  mainContent.style.display = "block"; // Show main content after loading
+  mainContent.style.display = "block";
 }
 
 testTextarea.addEventListener("input", () => {
@@ -81,10 +84,15 @@ backBtn.addEventListener("click", () => {
   createTestOptionContainer.style.display = "none";
   createTestContainer.style.display = "block";
 });
+takeTestButtonId.addEventListener("click", () => {
+  testIdCon.classList.add("display-none");
+  initialButtons.style.display = "none";
+  takeTestContainer.style.display = "block";
+});
 startTestBtn.addEventListener("click", () => {
   const testId = testIdInput.value;
   showLoading();
-  testQuestionContainer.innerHTML = ""; // Clear previous questions
+  testQuestionContainer.innerHTML = "";
   fetch(`${apiUrl}/getquestions?testId=${testId}`, {
     method: "GET",
   })
@@ -98,7 +106,7 @@ startTestBtn.addEventListener("click", () => {
     })
     .catch((error) => {
       hideLoading();
-      // Handle API error
+      alert("Something went wrong, while fetching test.");
     });
 });
 
@@ -114,7 +122,7 @@ submitBtn.addEventListener("click", async () => {
   const testId = Math.floor(10000 + Math.random() * 90000);
   const formData = new FormData();
 
-  formData.append("testId", testId); // Corrected: Only one testId
+  formData.append("testId", testId);
   formData.append("noOfQuestion", noOfQustons);
   formData.append("noOfOptions", noOfOptions);
   formData.append("hardness", hardness);
@@ -123,7 +131,6 @@ submitBtn.addEventListener("click", async () => {
     formData.append("textData", testTextarea.value);
   }
 
-  // Handle image uploads using fetch API (prevents page reload)
   if (testFileUpload.files.length > 0) {
     for (let i = 0; i < testFileUpload.files.length; i++) {
       const file = testFileUpload.files[i];
@@ -142,18 +149,18 @@ submitBtn.addEventListener("click", async () => {
     const { questionsObj } = await response.json();
     const { id, questions } = questionsObj;
     displayQuestions(id, questions);
-    createTestOptionContainer.style.display = "none"; // Hide option container
+    createTestOptionContainer.style.display = "none";
     hideLoading();
   } catch (error) {
     hideLoading();
     console.error("Error submitting form:", error);
-    // Handle errors gracefully, e.g., display an error message to the user
+    alert("Something went wrong, while generating test.");
   }
 });
 
 function displayQuestions(id, questions) {
   globalQuestions = questions;
-  questionPreviewContainer.innerHTML = `<h1 class="test-preview-id" > TEST ID - ${id}</h1>`;
+  questionPreviewContainer.innerHTML = ``;
 
   questionPreviewContainer.style.display = "block";
 
@@ -197,6 +204,7 @@ function displayQuestions(id, questions) {
   buttonContainer.appendChild(regenerateBtn);
   buttonContainer.appendChild(submitTest);
   questionPreviewContainer.appendChild(buttonContainer);
+  testPreviewId.textContent = `Test ID - ${id}`;
 }
 function handleSubmitTest() {
   const testId = document
@@ -214,21 +222,14 @@ function handleSubmitTest() {
     .then((response) => {
       if (response.ok) {
         questionPreviewContainer.style.display = "none";
-        return fetch(`${apiUrl}/getquestions?testId=${testId}`, {
-          method: "GET",
-        });
+        testIdCon.classList.remove("display-none");
+        hideLoading();
+        alert("Test Saved");
+        return;
       } else {
         hideLoading();
         alert("Something went wrong, while saving test.");
       }
-    })
-    .then((response) => response.json())
-    .then((responseData) => {
-      const { questions } = responseData;
-      testQuestions = questions;
-      hideLoading();
-      alert("Test Saved");
-      location.reload();
     })
     .catch((error) => {
       hideLoading();
@@ -252,7 +253,7 @@ function handleRegenerate() {
     .trim();
   const formData = new FormData();
 
-  formData.append("testId", testId); // Corrected: Only one testId
+  formData.append("testId", testId);
   formData.append("noOfQuestion", noOfQustons);
   formData.append("noOfOptions", noOfOptions);
   formData.append("hardness", hardness);
@@ -261,7 +262,6 @@ function handleRegenerate() {
     formData.append("textData", testTextarea.value);
   }
 
-  // Handle image uploads using fetch API (prevents page reload)
   if (testFileUpload.files.length > 0) {
     for (let i = 0; i < testFileUpload.files.length; i++) {
       const file = testFileUpload.files[i];
@@ -283,6 +283,7 @@ function handleRegenerate() {
     .catch((error) => {
       hideLoading();
       console.error("Error:", error);
+      alert("Something went wrong, while regenerating test.");
       // Handle API error
     });
 }
@@ -299,12 +300,11 @@ function displayTestQuestion() {
 
     const questionText = document.createElement("p");
     questionContainer.appendChild(questionText);
-
-    // Typewriter effect for the question
     typeWriter(
       questionText,
       `${currentQuestionIndex + 1}. ${questionData.question}`,
-      0
+      0,
+      questionTypeSpeed
     );
 
     const optionsContainer = document.createElement("div");
@@ -315,22 +315,18 @@ function displayTestQuestion() {
         const optionInput = document.createElement("input");
         optionInput.type = "radio";
         optionInput.name = `question-${currentQuestionIndex}`;
-        optionInput.value = optionIndex + 1; // Correct answer will match this
+        optionInput.value = optionIndex;
         const optionLabel = document.createElement("label");
         optionLabel.textContent = questionData.options[optionIndex];
-        // Wrap input and label in a div
         const optionDiv = document.createElement("div");
         optionDiv.classList.add("option", "fade-in");
         optionDiv.appendChild(optionLabel);
         optionDiv.appendChild(optionInput);
-        // Add an event listener to the option div to select the radio button when clicked
         optionDiv.addEventListener("click", () => {
           optionInput.checked = true;
         });
-        // Append the optionDiv to the container
         optionsContainer.appendChild(optionDiv);
         optionIndex++;
-        // Recursively call displayOption with delay
         setTimeout(displayOption, optionDisplaySpeed);
       }
     };
@@ -350,6 +346,8 @@ function displayTestQuestion() {
     const resultDiv = document.createElement("div");
     resultDiv.textContent = `Test Complete! You answered ${correctAnswersCount} out of ${testQuestions.length} questions correctly.`;
     testQuestionContainer.appendChild(resultDiv);
+    currentQuestionIndex = 0;
+    correctAnswersCount = 0;
   }
 }
 function handleTestNext(questionData) {
@@ -357,8 +355,7 @@ function handleTestNext(questionData) {
     `input[name="question-${currentQuestionIndex}"]:checked`
   );
   if (selectedOption) {
-    const selectedAnswer = parseInt(selectedOption.value) - 1;
-    console.log(selectedAnswer, questionData.answer);
+    const selectedAnswer = parseInt(selectedOption.value);
     if (selectedAnswer === questionData.answer) {
       correctAnswersCount++;
     }
